@@ -69,6 +69,20 @@ public:
 			const char * hdir_ch = dir_str.c_str();
 			ret = chdir(hdir_ch);
 		}
+		else if (dir.length() > 0 && dir.at(0) == '#') {
+			string num_str = dir;
+			num_str.erase(0, 1);
+			int num = atoi(num_str.c_str());
+			bool flag = this->CheckDirEntity(num);
+			if (flag) {
+				string dir_str = this->GetDirEntity(num);
+				const char * hdir_ch = dir_str.c_str();
+				ret = chdir(hdir_ch);
+			}
+			else {
+				ret = -1;
+			}
+		}
 		else {
 			const char * dir_ch = dir.c_str();
 			ret = chdir(dir_ch);
@@ -83,8 +97,8 @@ public:
 	}
 
 	void DirList() {
-		for (int i = 0; i < m_dlist.size() ; i++) {
-			cout << m_hlist[i].id << " " << m_hlist[i].line << endl;
+		for (int i = 0; i < m_dlist.size(); i++) {
+			cout << i+1 << " " << m_dlist[i].line << endl;
 		}
 	}
 
@@ -100,6 +114,7 @@ public:
 		return m_cnt;
 	}
 
+	// hlist operations
 	void AddHistoryEntity(string line) {
 		Entity entity;
 		entity.id = m_cnt;
@@ -129,22 +144,32 @@ public:
 		return m_hlist[idx].line;
 	}
 
+	// dlist opertaions
 	void AddDirEntity() {
 		Entity entity;
 		entity.id = m_cnt;
 		entity.line = this->Current();
 
 		if (m_dlist.size() < 10) {
-			m_dlist.push_back(entity);
+			m_dlist.push_front(entity);
 		}
 		else {
-			m_dlist.pop_front();
-			m_dlist.push_back(entity);
+			m_dlist.pop_back();
+			m_dlist.push_front(entity);
 		}
+	}
 
-		for (int i = 0; i < m_dlist.size(); i++) {
-			cout << m_dlist[i].id << m_dlist[i].line << endl;
+	bool CheckDirEntity(int idx) {
+		if (idx < m_dlist.size() && idx >= 0) {
+			return true;
 		}
+		else {
+			return false;
+		}
+	}
+
+	string GetDirEntity(int idx) {
+		return m_dlist[idx].line;
 	}
 
 private:
