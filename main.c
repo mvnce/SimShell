@@ -106,8 +106,11 @@ int main(int argc, char **argv, char** env) {
 			continue;
 		}
 		else {
-			cout << input_str << ": Command not found." << endl;
-			shell.AddHistoryEntity(input_str);
+			char input_bu[128];
+			strcpy(input_bu, input_str);
+
+			shell.ExternalCommand(input_str);
+			shell.AddHistoryEntity(input_bu);
 			shell.AddDirEntity();
 			shell.CountInc();
 		}

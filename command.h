@@ -5,8 +5,13 @@
 #include <vector>
 #include <deque>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <ctime>
 #include <sstream>
+#include <typeinfo>
 
 using namespace std;
 
@@ -160,7 +165,7 @@ public:
 	}
 
 	bool CheckDirEntity(int idx) {
-		if (idx < m_dlist.size() && idx >= 0) {
+		if (idx < m_dlist.size() && idx > 0) {
 			return true;
 		}
 		else {
@@ -170,6 +175,72 @@ public:
 
 	string GetDirEntity(int idx) {
 		return m_dlist[idx].line;
+	}
+
+	void Parse(char *line, char **argv) {
+		while (*line != '\0') {
+			while (*line == ' ' || *line == '\t' || *line == '\n') {
+				*line++ = '\0';
+			}
+
+			*argv++ = line;
+
+			while (*line != '\0' && *line != ' ' && *line != '\t' && *line != '\n') {
+				line++;
+			}
+		}
+		*argv = '\0';
+	}
+
+	void Execute(char **argv) {
+		pid_t pid;
+		int status;
+		int result;
+
+		int cnt = 0;
+		char **temp = argv;
+		while (*temp != NULL) {
+			cnt++;
+			temp++;
+		}
+
+		const char *amp;
+		amp = "&";
+		bool amp_flag = false;
+
+		if (strcmp(argv[cnt-1], amp) == 0) {
+			amp_flag = true;
+			argv[cnt-1] = NULL;
+			cnt--;
+		}
+
+		if ((pid = fork()) < 0) {
+			cout << "fork initial error" << endl;
+			exit(1);
+		}
+		else if (pid == 0) {
+			if (execvp(*argv, argv) < 0) {
+				cout << "fork child process error" << endl;
+				exit(1);
+			}
+		}
+		else if (!amp_flag) {
+			if (wait(&status) != pid) {
+				perror( "wait error" );
+			}
+		}
+
+		if (amp_flag) {
+			cout << "wait... child, pid = " << pid << endl;
+			result = waitpid(pid, &status, 0);
+		}
+	}
+
+	void ExternalCommand(char line[]) {
+		char  *argv[64];
+
+		this->Parse(line, argv);
+		this->Execute(argv);
 	}
 
 private:
