@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <ctime>
 #include <sstream>
-#include <typeinfo>
 
 using namespace std;
 
@@ -28,15 +27,16 @@ public:
 		m_cnt = 1;
 	}
 
-	vector<string> Tokenizer(string line, char del) {
+	vector<string> Convert(char **argv) {
 		vector<string> tokens;
-		stringstream ss(line);
-  		string token;
-  		while(getline(ss, token, del)) {
-  			tokens.push_back(token);
-  		}
-  		return tokens;
-  	}
+
+		while(*argv != NULL) {
+			string token = *argv;
+			tokens.push_back(token);
+			*argv++;
+		}
+		return tokens;
+	}
 
 	void Quit() {
 		exit(0);
@@ -178,18 +178,13 @@ public:
 	}
 
 	void Parse(char *line, char **argv) {
-		while (*line != '\0') {
-			while (*line == ' ' || *line == '\t' || *line == '\n') {
-				*line++ = '\0';
-			}
+		char *pch;
+		pch = strtok(line, " \t");
 
-			*argv++ = line;
-
-			while (*line != '\0' && *line != ' ' && *line != '\t' && *line != '\n') {
-				line++;
-			}
+		while (pch != NULL) {
+			*argv++ = pch;
+			pch = strtok (NULL, " \t");
 		}
-		*argv = '\0';
 	}
 
 	void Execute(char **argv) {
@@ -231,13 +226,13 @@ public:
 		}
 
 		if (amp_flag) {
-			cout << "wait... child, pid = " << pid << endl;
+			cout << "wait child " << pid << endl;
 			result = waitpid(pid, &status, 0);
 		}
 	}
 
 	void ExternalCommand(char line[]) {
-		char  *argv[64];
+		char *argv[64];
 
 		this->Parse(line, argv);
 		this->Execute(argv);

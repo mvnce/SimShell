@@ -25,7 +25,15 @@ int main(int argc, char **argv, char** env) {
 			cout << "<" << shell.GetCount() << " " << shell.GetUsername() << ">";
 			cin.getline(input_str, 128);
 		}
-		vector<string> tokens = shell.Tokenizer(input_str , ' ');
+
+		char input_bt[128];
+		strcpy(input_bt, input_str);
+		char *argv[64];
+		shell.Parse(input_bt, argv);
+
+
+		// vector<string> tokens = shell.Tokenizer(input_str , ' ');
+		vector<string> tokens = shell.Convert(argv);
 		
 		string ftoken = "";
 		if (tokens.size() > 0) {
